@@ -26,22 +26,22 @@ include_directories(third_party/perfetto)
 add_library(perfetto STATIC third_party/perfetto/perfetto.cc)
 
 ############################ START #########################
-# This section is experimental
-# TODO: find out how is trace.gen.h/c generated, this is usefule to visualize the trace data
-# by using trace.ParseFromArray https://github.com/google/perfetto/blob/v21/src/tracing/test/api_integrationtest.cc#L4427
+# # This section is experimental
+# # TODO: find out how is trace.gen.h/c generated, this is usefule to visualize the trace data
+# # by using trace.ParseFromArray https://github.com/google/perfetto/blob/v21/src/tracing/test/api_integrationtest.cc#L4427
 
-# If you encounter some protobuf version issue on your system, define the protoc binary explicity
-# set(Protobuf_PROTOC_EXECUTABLE /usr/bin/protoc)
-include(FindProtobuf)
-find_package(Protobuf REQUIRED)
-include_directories(${PROTOBUF_INCLUDE_DIR})
+# # If you encounter some protobuf version issue on your system, define the protoc binary explicity
+# # set(Protobuf_PROTOC_EXECUTABLE /usr/bin/protoc)
+# include(FindProtobuf)
+# find_package(Protobuf REQUIRED)
+# include_directories(${PROTOBUF_INCLUDE_DIR})
 
-# This is only for test purpose, because the protobuf parse functions are defined in perfetto_trace.pb.cc
-include_directories(third_party/perfetto_proto)
-add_library(perfetto_proto STATIC
-    third_party/perfetto_proto/perfetto_trace.pb.cc
-)
-target_link_libraries(perfetto_proto ${PROTOBUF_LIBRARY})
+# # This is only for test purpose, because the protobuf parse functions are defined in perfetto_trace.pb.cc
+# include_directories(third_party/perfetto_proto)
+# add_library(perfetto_proto STATIC
+#     third_party/perfetto_proto/perfetto_trace.pb.cc
+# )
+# target_link_libraries(perfetto_proto ${PROTOBUF_LIBRARY})
 ############################ END #########################
 
 # data generator
@@ -49,5 +49,4 @@ add_executable(data_generator_test
     data_generator_test.cc
     trace_categories.cc
     )
-target_link_libraries(data_generator_test PUBLIC perfetto perfetto_proto
-                      ${CMAKE_THREAD_LIBS_INIT})
+target_link_libraries(data_generator_test PUBLIC perfetto ${CMAKE_THREAD_LIBS_INIT})

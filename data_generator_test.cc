@@ -1,8 +1,5 @@
-#include "perfetto_trace.pb.h"
+// #include "perfetto_trace.pb.h"
 #include "trace_categories.h"
-#include <_types/_uint16_t.h>
-#include <_types/_uint32_t.h>
-#include <_types/_uint64_t.h>
 #include <fstream>
 #include <iostream>
 #include <math.h>
@@ -25,7 +22,7 @@ std::unique_ptr<perfetto::TracingSession> StartTracing() {
   // recording. In this example we just need the "track_event" data source,
   // which corresponds to the TRACE_EVENT trace points.
   perfetto::TraceConfig cfg;
-  cfg.add_buffers()->set_size_kb(1024*1024);
+  cfg.add_buffers()->set_size_kb(1024 * 1024);
   auto *ds_cfg = cfg.add_data_sources()->mutable_config();
   ds_cfg->set_name("track_event");
 
@@ -40,17 +37,28 @@ void StopTracing(std::unique_ptr<perfetto::TracingSession> tracing_session,
   perfetto::TrackEvent::Flush();
   tracing_session->StopBlocking();
   std::vector<char> raw_trace = tracing_session->ReadTraceBlocking();
-  std::string raw_trace_string(raw_trace.begin(), raw_trace.end());
 
-  // Change the end time of the trace
-  perfetto::protos::Trace trace;
-  trace.ParseFromString(raw_trace_string);
-  auto packet = trace.mutable_packet(7);
-  packet->set_timestamp(trace_end_time);
-  assert(packet->service_event().tracing_disabled() == true);
+  protozero::HeapBuffered<perfetto::protos::pbzero::Trace> additional_trace;
+  auto last_packet = additional_trace->add_packet();
+  last_packet->set_trusted_uid(505);
+  last_packet->set_timestamp(trace_end_time);
+  last_packet->set_trusted_packet_sequence_id(1);
+  auto *last_packet_service_event = last_packet->set_service_event();
+  last_packet_service_event->set_tracing_disabled(true);
+  std::vector<unsigned char> additional_trace_u_chars =
+      additional_trace.SerializeAsArray();
+  std::vector<char> additional_trace_chars(
+      additional_trace_u_chars.size());
+  std::transform(additional_trace_u_chars.begin(),
+                 additional_trace_u_chars.end(),
+                 additional_trace_chars.begin(),
+                 [](unsigned char c) { return static_cast<char>(c); });
 
-  std::fstream output("example.pftrace", std::ios::out | std::ios::binary);
-  trace.SerializeToOstream(&output);
+  std::ofstream output;
+  output.open("example.pftrace", std::ios::out | std::ios::binary);
+  output.write(&raw_trace[0], raw_trace.size());
+  output.write(&additional_trace_chars[0], additional_trace_chars.size());
+  output.close();
 }
 
 int main(int, const char **) {
