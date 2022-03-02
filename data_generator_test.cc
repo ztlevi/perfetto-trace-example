@@ -112,10 +112,13 @@ int main(int, const char **) {
   std::thread thread([&] {
     create_counter_track(tracing_session, data, start_time, "track1", "unit1",
                          bin_width);
+  });
+  std::thread thread2([&] {
     create_counter_track(tracing_session, data, start_time, "track2", "unit2",
                          bin_width);
   });
   thread.join();
+  thread2.join();
 
   StopTracing(tracing_session, output_filename, trace_end_time);
 
