@@ -22,6 +22,7 @@
 // The set of track event categories that the example is using.
 PERFETTO_DEFINE_CATEGORIES(
     perfetto::Category("op1").SetDescription("kernal1 info."),
+    perfetto::Category("bar").SetDescription("kernal1 info."),
 );
 
 #endif // TRACE_CATEGORIES_H

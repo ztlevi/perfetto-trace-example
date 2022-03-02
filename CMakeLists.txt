@@ -24,6 +24,7 @@ find_package(Threads)
 # (perfetto.cc and perfetto.h) to live in the top level sdk/ directory.
 include_directories(third_party/perfetto)
 add_library(perfetto STATIC third_party/perfetto/perfetto.cc)
+target_link_libraries(perfetto PRIVATE Threads::Threads)
 
 ############################ START #########################
 # # This section is experimental
@@ -49,4 +50,4 @@ add_executable(data_generator_test
     data_generator_test.cc
     trace_categories.cc
     )
-target_link_libraries(data_generator_test PUBLIC perfetto ${CMAKE_THREAD_LIBS_INIT})
+target_link_libraries(data_generator_test PUBLIC perfetto)
