@@ -23,7 +23,7 @@ StartTracing(std::string output_filename) {
   // recording. In this example we just need the "track_event" data source,
   // which corresponds to the TRACE_EVENT trace points.
   perfetto::TraceConfig cfg;
-  cfg.add_buffers()->set_size_kb(32 * 1024);
+  cfg.add_buffers()->set_size_kb(256 * 1024);
   auto *ds_cfg = cfg.add_data_sources()->mutable_config();
   ds_cfg->set_name("track_event");
 
@@ -76,14 +76,15 @@ void create_counter_track(
   perfetto::CounterTrack counter_track =
       perfetto::CounterTrack(&track_name[0], &unit_name[0]);
 
-  int flush_count = 100;
-  int flush_counter = 0;
+  int64_t flush_count = 100;
+  int64_t flush_counter = 0;
   uint64_t flush_timeout = 5000;
 
   for (auto val : data) {
     TRACE_COUNTER("op1", counter_track, increment_time, val);
     increment_time += bin_width;
-    if (flush_counter++ % flush_count == 0) {
+    flush_counter %= flush_count;
+    if (flush_counter++ == 0) {
       tracing_session->FlushBlocking(flush_timeout);
     }
   }
@@ -99,7 +100,7 @@ int main(int, const char **) {
 
   uint32_t time_unit = 1000000000;
   auto start_time = perfetto::TrackEvent::GetTraceTimeNs() + time_unit * 10;
-  uint32_t trace_duration = 300 * time_unit; // 300s
+  uint32_t trace_duration = 3000 * time_unit; // 3000s
   uint64_t trace_end_time = start_time + trace_duration;
 
   std::vector<float> data;
